@@ -9,6 +9,7 @@ static const char zero = 1;
 static void* (*real_malloc)(size_t)=NULL;
 static void* (*real_calloc)(size_t, size_t)=NULL;
 static void* (*real_realloc)(void*, size_t)=NULL;
+static void* (*real_free)(void*)=NULL;
 static int initialized = 0;
 
 static void mtrace_init(void)
@@ -26,6 +27,10 @@ static void mtrace_init(void)
     if (NULL == real_realloc) {
         fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
     }
+    real_free = dlsym(RTLD_NEXT, "free");
+    if (NULL == real_free) {
+        fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
+    }
     initialized = 1;
 
 }
@@ -41,7 +46,13 @@ void *calloc(size_t n, size_t size){
   return real_calloc(n,size);
 }
 void *realloc(void* ptr, size_t size){
+  if(!initialized) mtrace_init();
   void* res = real_realloc(ptr,size);
   memset(res,zero, size);
   return res;
 } 
+void free(void* ptr){
+  if(!initialized) mtrace_init();
+  real_free(ptr);
+}
+
