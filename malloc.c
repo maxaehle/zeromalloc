@@ -9,8 +9,8 @@ void* __libc_calloc(size_t,size_t);
 void* __libc_realloc(void*,size_t);
 void __libc_free(void*);
 
+static const char zero = 0;
 
-static const char zero = 1;
 void *malloc(size_t size)
 {
   void* res = __libc_malloc(size);
@@ -22,7 +22,7 @@ void *calloc(size_t n, size_t size){
 }
 void *realloc(void* ptr, size_t size){
   void* res = __libc_realloc(ptr,size);
-  memset(res,zero, size);
+  // memset(res,zero, size); // causes problems
   return res;
 } 
 void free(void* ptr){
