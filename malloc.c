@@ -14,6 +14,11 @@ static int initialized = 0;
 
 static void mtrace_init(void)
 {
+    if(!initialized){ 
+      initialized = 1; // ok
+    } else {
+      fprintf(stderr, "Error, mtrace_init called recursively.\n");
+    }
     real_malloc = dlsym(RTLD_NEXT, "malloc");
     if (NULL == real_malloc) {
         fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
@@ -31,8 +36,6 @@ static void mtrace_init(void)
     if (NULL == real_free) {
         fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
     }
-    initialized = 1;
-
 }
 
 void *malloc(size_t size)
