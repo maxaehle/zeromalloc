@@ -5,11 +5,15 @@
 #include <string.h>
 
 static const char zero = 1;
+void* __libc_malloc(size_t);
+void* __libc_calloc(size_t,size_t);
+void* __libc_realloc(void*,size_t);
+void __libc_free(void*);
 
 static void* (*real_malloc)(size_t)=NULL;
 static void* (*real_calloc)(size_t, size_t)=NULL;
 static void* (*real_realloc)(void*, size_t)=NULL;
-static void* (*real_free)(void*)=NULL;
+static void (*real_free)(void*)=NULL;
 static int initialized = 0;
 
 static void mtrace_init(void)
@@ -19,23 +23,10 @@ static void mtrace_init(void)
     } else {
       fprintf(stderr, "Error, mtrace_init called recursively.\n");
     }
-    real_malloc = dlsym(RTLD_NEXT, "malloc");
-    if (NULL == real_malloc) {
-        fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
-    }
-    real_calloc = dlsym(RTLD_NEXT, "calloc");
-    if (NULL == real_calloc) {
-        fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
-    }
-
-    real_realloc = dlsym(RTLD_NEXT, "realloc");
-    if (NULL == real_realloc) {
-        fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
-    }
-    real_free = dlsym(RTLD_NEXT, "free");
-    if (NULL == real_free) {
-        fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
-    }
+    real_malloc = __libc_malloc;
+    real_calloc = __libc_calloc;
+    real_realloc = __libc_realloc;
+    real_free = __libc_free;
 }
 
 void *malloc(size_t size)
